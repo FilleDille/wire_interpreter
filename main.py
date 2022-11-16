@@ -9,6 +9,7 @@ from spacy_langdetect import LanguageDetector
 import sys
 import os
 import json
+import re
 
 index_dict = {
     'large cap': 'largecap.csv',
@@ -163,9 +164,12 @@ class Train:
     temp_stock_version = 0
 
     def company_loop(article):
-        for index, row in Train.df_prices.iterrows():
-            if index in article[:200] or index in article[len(article)-200:]:
-                return index
+        temp_list = []
+
+        for words in list(Train.df_prices['name'].str.lower()):
+            if re.search(r'\b' + words + r'\b', article):
+                temp_list.append('{0}'.format(words))
+                return temp_list[0]
 
     def fetch_stock_return(stock):
         if sum(Train.df_prices.index == stock) > 1:
@@ -247,7 +251,7 @@ class Train:
 
                 with open(current_dir + 'training_data.csv', 'a') as fd:
                     fd.write(str((datetime.datetime.now()-datetime.timedelta(1)).strftime(
-                        '%Y-%m-%d')) + ',' + str(temp_stock_name) + ',' + str(article) + ',' + str(temp_category) + '\n')
+                        '%Y-%m-%d')) + ';' + str(temp_stock_name) + ';' + str(article) + ';' + str(temp_category) + '\n')
 
         print('Training data saved')
 
