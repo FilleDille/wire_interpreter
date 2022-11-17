@@ -166,7 +166,7 @@ class Train:
     def company_loop(article):
         temp_list = []
 
-        for words in list(Train.df_prices['name'].str.lower()):
+        for words in list(Train.df_prices.index.values):
             if re.search(r'\b' + words + r'\b', article):
                 temp_list.append('{0}'.format(words))
                 return temp_list[0]
