@@ -166,10 +166,11 @@ class Train:
     def company_loop(article):
         temp_list = []
 
-        for words in list(Train.df_prices.index.values):
-            if re.search(r'\b' + words + r'\b', article):
-                temp_list.append('{0}'.format(words))
-                return temp_list[0]
+        for company_name in list(Train.df_prices.index.values):
+            company_count = sum(1 for _ in re.finditer(r'\b%s\b' % re.escape(company_name), article))
+            temp_list.append((company_name,company_count))
+        
+        return sorted(temp_list,key=lambda x: x[1], reverse=True)[0][0]
 
     def fetch_stock_return(stock):
         if sum(Train.df_prices.index == stock) > 1:
