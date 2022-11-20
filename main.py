@@ -167,10 +167,13 @@ class Train:
         temp_list = []
 
         for company_name in list(Train.df_prices.index.values):
-            company_count = sum(1 for _ in re.finditer(r'\b%s\b' % re.escape(company_name), article))
-            temp_list.append((company_name,company_count))
-        
-        return sorted(temp_list,key=lambda x: x[1], reverse=True)[0][0]
+            company_count = sum(1 for _ in re.finditer(
+                r'\b%s\b' % re.escape(company_name), article))
+            temp_list.append((company_name, company_count))
+
+        sorted_list = sorted(temp_list, key=lambda x: x[1], reverse=True)
+        if sorted_list[0][1] > 0:
+            return sorted_list[0][0]
 
     def fetch_stock_return(stock):
         if sum(Train.df_prices.index == stock) > 1:
@@ -221,6 +224,11 @@ class Train:
         Train.df_prices = pd.read_csv(current_dir +
                                       (datetime.datetime.now()-datetime.timedelta(1)).strftime('%Y-%m-%d') + ' prices.csv')
         Train.df_prices.set_index('name', inplace=True)
+        df_training_data = pd.read_csv('training_data.csv')
+        temp_date_list = []
+        temp_company_list = []
+        temp_article_list = []
+        temp_grade_list = []
 
         for article in df_articles['article']:
             temp_stock_name = Train.company_loop(article)
@@ -250,11 +258,150 @@ class Train:
                 else:
                     temp_category = 1
 
-                with open(current_dir + 'training_data.csv', 'a') as fd:
-                    fd.write(str((datetime.datetime.now()-datetime.timedelta(1)).strftime(
-                        '%Y-%m-%d')) + ';' + str(temp_stock_name) + ';' + str(article) + ';' + str(temp_category) + '\n')
+                temp_date_list.append(str((datetime.datetime.now()-datetime.timedelta(1)).strftime(
+                    '%Y-%m-%d')))
+                temp_company_list.append(temp_stock_name)
+                temp_article_list.append(article)
+                temp_grade_list.append(temp_category)
 
-        print('Training data saved')
+        df_temp = pd.DataFrame({'date': temp_date_list, 'company': temp_company_list,
+                               'article': temp_article_list, 'grade': temp_grade_list})
+        df_training_data = pd.concat(
+            [df_training_data, df_temp], ignore_index=True)
+
+        export_name = current_dir + 'training_data.csv'
+
+        df_training_data.to_csv(export_name, index=False)
+
+        print(f'Export successfull, see {export_name}')
+
+
+class Debug:
+    df_prices = pd.DataFrame()
+    index_grade = {
+        'large cap': 5,
+        'mid cap': 4,
+        'small cap': 3,
+        'ngm': 1,
+        'first north': 2
+    }
+    temp_stock_version = 0
+
+    def company_loop(article):
+        temp_list = []
+
+        for company_name in list(Train.df_prices.index.values):
+            company_count = sum(1 for _ in re.finditer(
+                r'\b%s\b' % re.escape(company_name), article))
+            temp_list.append((company_name, company_count))
+
+        sorted_list = sorted(temp_list, key=lambda x: x[1], reverse=True)
+        if sorted_list[0][1] > 0:
+            return sorted_list[0][0]
+
+    def fetch_stock_return(stock):
+        if sum(Train.df_prices.index == stock) > 1:
+            stock_return = round(
+                Train.df_prices.loc[stock]['diff1dprc'][Train.temp_stock_version], 2)
+        else:
+            stock_return = round(
+                Train.df_prices.loc[stock]['diff1dprc'], 2)
+
+        return stock_return
+
+    def fetch_stock_index(stock):
+        if sum(Train.df_prices.index == stock) > 1:
+            grade = []
+
+            for company in Train.df_prices.loc[stock]['list']:
+                grade.append(Train.index_grade[company])
+
+            index_name = list(Train.index_grade.keys())[list(
+                Train.index_grade.values()).index(max(grade))]
+            Train.temp_stock_version = grade.index(max(grade))
+        else:
+            index_name = Train.df_prices.loc[stock]['list']
+
+        return index_name
+
+    def fetch_stock_beta(stock):
+        if sum(Train.df_prices.index == stock) > 1:
+            stock_beta = Train.df_prices.loc[stock]['beta'][Train.temp_stock_version]
+        else:
+            stock_beta = Train.df_prices.loc[stock]['beta']
+
+        if stock_beta == 0:
+            stock_beta = 1
+
+        return stock_beta
+
+    def fetch_index_return(file_path, hist_date):
+        df_index = pd.read_csv(current_dir + file_path)
+        df_index.set_index('date', inplace=True)
+
+        return df_index.loc[hist_date]['change']
+
+    def main():
+        history_list = ['2022-10-20', '2022-10-21', '2022-10-24', '2022-10-25', '2022-10-26', '2022-10-27', '2022-10-28', '2022-10-31', '2022-11-01', '2022-11-02',
+                        '2022-11-03', '2022-11-04', '2022-11-07', '2022-11-08', '2022-11-09', '2022-11-10', '2022-11-11', '2022-11-14', '2022-11-15', '2022-11-16', '2022-11-17', '2022-11-18']
+        df_training_data = pd.read_csv('training_data.csv')
+
+        for hist_date in history_list:
+            df_articles = pd.read_csv(
+                current_dir + str(hist_date) + ' articles.csv').dropna()
+            df_articles.set_index('date', inplace=True)
+            Train.df_prices = pd.read_csv(
+                current_dir + str(hist_date) + ' prices.csv')
+            Train.df_prices.set_index('name', inplace=True)
+
+            temp_date_list = []
+            temp_company_list = []
+            temp_article_list = []
+            temp_grade_list = []
+
+            for article in df_articles['article']:
+                temp_stock_name = Train.company_loop(article)
+                Train.temp_stock_version = 0
+
+                if not temp_stock_name == None:
+                    temp_index_name = Train.fetch_stock_index(temp_stock_name)
+                    temp_stock_return = Train.fetch_stock_return(
+                        temp_stock_name)
+                    temp_stock_beta = Train.fetch_stock_beta(temp_stock_name)
+                    temp_index_return = Train.fetch_index_return(
+                        index_dict[temp_index_name], str(hist_date))
+                    temp_stock_risk_adjusted_return = float(
+                        temp_index_return) * float(temp_stock_beta)
+                    temp_stock_net_return = float(
+                        temp_stock_return) - float(temp_stock_risk_adjusted_return)
+                    temp_category = 0
+
+                    if temp_stock_net_return > 6:
+                        temp_category = 5
+                    elif temp_stock_net_return > 4:
+                        temp_category = 4
+                    elif temp_stock_net_return > 2:
+                        temp_category = 3
+                    elif temp_stock_net_return > 0:
+                        temp_category = 2
+                    else:
+                        temp_category = 1
+
+                    temp_date_list.append(str(hist_date))
+                    temp_company_list.append(temp_stock_name)
+                    temp_article_list.append(article)
+                    temp_grade_list.append(temp_category)
+
+            df_temp = pd.DataFrame({'date': temp_date_list, 'company': temp_company_list,
+                                    'article': temp_article_list, 'grade': temp_grade_list})
+            df_training_data = pd.concat(
+                [df_training_data, df_temp], ignore_index=True)
+
+        export_name = current_dir + 'training_data.csv'
+
+        df_training_data.to_csv(export_name, index=False)
+
+        print(f'Export successfull, see {export_name}')
 
 
 if __name__ == "__main__":
@@ -274,5 +421,7 @@ if __name__ == "__main__":
         Prices.main()
     elif stage == 'train':
         Train.main()
+    elif stage == 'debug':
+        Debug.main()
     else:
         print('Provided stage not found.')
