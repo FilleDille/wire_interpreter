@@ -172,8 +172,10 @@ class Train:
             temp_list.append((company_name, company_count))
 
         sorted_list = sorted(temp_list, key=lambda x: x[1], reverse=True)
+
         if sorted_list[0][1] > 0:
             return sorted_list[0][0]
+        return None
 
     def fetch_stock_return(stock):
         if sum(Train.df_prices.index == stock) > 1:
@@ -234,7 +236,7 @@ class Train:
             temp_stock_name = Train.company_loop(article)
             Train.temp_stock_version = 0
 
-            if not temp_stock_name == None:
+            if temp_stock_name != None:
                 temp_index_name = Train.fetch_stock_index(temp_stock_name)
                 temp_stock_return = Train.fetch_stock_return(
                     temp_stock_name)
@@ -276,7 +278,7 @@ class Train:
         print(f'Export successfull, see {export_name}')
 
 
-class Debug:
+class Debug_history:
     df_prices = pd.DataFrame()
     index_grade = {
         'large cap': 5,
@@ -290,45 +292,47 @@ class Debug:
     def company_loop(article):
         temp_list = []
 
-        for company_name in list(Train.df_prices.index.values):
+        for company_name in list(Debug_history.df_prices.index.values):
             company_count = sum(1 for _ in re.finditer(
                 r'\b%s\b' % re.escape(company_name), article))
             temp_list.append((company_name, company_count))
 
         sorted_list = sorted(temp_list, key=lambda x: x[1], reverse=True)
+
         if sorted_list[0][1] > 0:
             return sorted_list[0][0]
+        return None
 
     def fetch_stock_return(stock):
-        if sum(Train.df_prices.index == stock) > 1:
+        if sum(Debug_history.df_prices.index == stock) > 1:
             stock_return = round(
-                Train.df_prices.loc[stock]['diff1dprc'][Train.temp_stock_version], 2)
+                Debug_history.df_prices.loc[stock]['diff1dprc'][Debug_history.temp_stock_version], 2)
         else:
             stock_return = round(
-                Train.df_prices.loc[stock]['diff1dprc'], 2)
+                Debug_history.df_prices.loc[stock]['diff1dprc'], 2)
 
         return stock_return
 
     def fetch_stock_index(stock):
-        if sum(Train.df_prices.index == stock) > 1:
+        if sum(Debug_history.df_prices.index == stock) > 1:
             grade = []
 
-            for company in Train.df_prices.loc[stock]['list']:
-                grade.append(Train.index_grade[company])
+            for company in Debug_history.df_prices.loc[stock]['list']:
+                grade.append(Debug_history.index_grade[company])
 
-            index_name = list(Train.index_grade.keys())[list(
-                Train.index_grade.values()).index(max(grade))]
-            Train.temp_stock_version = grade.index(max(grade))
+            index_name = list(Debug_history.index_grade.keys())[list(
+                Debug_history.index_grade.values()).index(max(grade))]
+            Debug_history.temp_stock_version = grade.index(max(grade))
         else:
-            index_name = Train.df_prices.loc[stock]['list']
+            index_name = Debug_history.df_prices.loc[stock]['list']
 
         return index_name
 
     def fetch_stock_beta(stock):
-        if sum(Train.df_prices.index == stock) > 1:
-            stock_beta = Train.df_prices.loc[stock]['beta'][Train.temp_stock_version]
+        if sum(Debug_history.df_prices.index == stock) > 1:
+            stock_beta = Debug_history.df_prices.loc[stock]['beta'][Debug_history.temp_stock_version]
         else:
-            stock_beta = Train.df_prices.loc[stock]['beta']
+            stock_beta = Debug_history.df_prices.loc[stock]['beta']
 
         if stock_beta == 0:
             stock_beta = 1
@@ -350,9 +354,9 @@ class Debug:
             df_articles = pd.read_csv(
                 current_dir + str(hist_date) + ' articles.csv').dropna()
             df_articles.set_index('date', inplace=True)
-            Train.df_prices = pd.read_csv(
+            Debug_history.df_prices = pd.read_csv(
                 current_dir + str(hist_date) + ' prices.csv')
-            Train.df_prices.set_index('name', inplace=True)
+            Debug_history.df_prices.set_index('name', inplace=True)
 
             temp_date_list = []
             temp_company_list = []
@@ -360,15 +364,17 @@ class Debug:
             temp_grade_list = []
 
             for article in df_articles['article']:
-                temp_stock_name = Train.company_loop(article)
-                Train.temp_stock_version = 0
+                temp_stock_name = Debug_history.company_loop(article)
+                Debug_history.temp_stock_version = 0
 
-                if not temp_stock_name == None:
-                    temp_index_name = Train.fetch_stock_index(temp_stock_name)
-                    temp_stock_return = Train.fetch_stock_return(
+                if temp_stock_name != None:
+                    temp_index_name = Debug_history.fetch_stock_index(
                         temp_stock_name)
-                    temp_stock_beta = Train.fetch_stock_beta(temp_stock_name)
-                    temp_index_return = Train.fetch_index_return(
+                    temp_stock_return = Debug_history.fetch_stock_return(
+                        temp_stock_name)
+                    temp_stock_beta = Debug_history.fetch_stock_beta(
+                        temp_stock_name)
+                    temp_index_return = Debug_history.fetch_index_return(
                         index_dict[temp_index_name], str(hist_date))
                     temp_stock_risk_adjusted_return = float(
                         temp_index_return) * float(temp_stock_beta)
@@ -422,6 +428,6 @@ if __name__ == "__main__":
     elif stage == 'train':
         Train.main()
     elif stage == 'debug':
-        Debug.main()
+        Debug_history.main()
     else:
         print('Provided stage not found.')
