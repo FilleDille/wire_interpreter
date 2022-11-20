@@ -173,7 +173,7 @@ class Train:
 
         sorted_list = sorted(temp_list, key=lambda x: x[1], reverse=True)
 
-        if sorted_list[0][1] > 0:
+        if sorted_list[0][1] > 5:
             return sorted_list[0][0]
         return None
 
@@ -299,7 +299,7 @@ class Debug_history:
 
         sorted_list = sorted(temp_list, key=lambda x: x[1], reverse=True)
 
-        if sorted_list[0][1] > 0:
+        if sorted_list[0][1] > 5:
             return sorted_list[0][0]
         return None
 
