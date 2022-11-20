@@ -326,7 +326,7 @@ class Debug_history:
         else:
             index_name = Debug_history.df_prices.loc[stock]['list']
 
-        return index_name
+        return index_name.lower()
 
     def fetch_stock_beta(stock):
         if sum(Debug_history.df_prices.index == stock) > 1:
@@ -375,7 +375,7 @@ class Debug_history:
                     temp_stock_beta = Debug_history.fetch_stock_beta(
                         temp_stock_name)
                     temp_index_return = Debug_history.fetch_index_return(
-                        index_dict[temp_index_name], str(hist_date))
+                        index_dict[temp_index_name.lower()], str(hist_date))
                     temp_stock_risk_adjusted_return = float(
                         temp_index_return) * float(temp_stock_beta)
                     temp_stock_net_return = float(
