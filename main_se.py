@@ -34,7 +34,7 @@ class Articles:
         return LanguageDetector()
 
     def main():
-        site = newspaper.build(urls['articles']['articles'])
+        site = newspaper.build(urls['se']['articles'])
         site_urls = site.article_urls()
         articles = []
 
@@ -90,43 +90,43 @@ class Prices:
                          '%Y-%m-%d')) + '\n')
 
     def fetch_firstnorth():
-        firstnorth = rq.get(urls['articles']['first north']).json()['points']
+        firstnorth = rq.get(urls['se']['first north']).json()['points']
         change = Prices.calculate_change(firstnorth)
         Prices.write_cap('firstnorth.csv', change)
 
         print('first north fetched')
 
     def fetch_largecap():
-        largecap = rq.get(urls['articles']['large cap']).json()['points']
+        largecap = rq.get(urls['se']['large cap']).json()['points']
         change = Prices.calculate_change(largecap)
         Prices.write_cap('largecap.csv', change)
 
         print('large cap fetched')
 
     def fetch_midcap():
-        midcap = rq.get(urls['articles']['mid cap']).json()['points']
+        midcap = rq.get(urls['se']['mid cap']).json()['points']
         change = Prices.calculate_change(midcap)
         Prices.write_cap('midcap.csv', change)
 
         print('mid cap fetched')
 
     def fetch_smallcap():
-        smallcap = rq.get(urls['articles']['small cap']).json()['points']
+        smallcap = rq.get(urls['se']['small cap']).json()['points']
         change = Prices.calculate_change(smallcap)
         Prices.write_cap('smallcap.csv', change)
 
         print('small cap fetched')
 
     def fetch_ngm():
-        ngm = rq.get(urls['articles']['ngm']).json()['axisPx']
+        ngm = rq.get(urls['se']['ngm']).json()['axisPx']
         change = Prices.calculate_change(ngm)
         Prices.write_cap('ngm.csv', change)
 
         print('ngm fetched')
 
     def main():
-        response = rq.get(urls['articles']['prices'] + str(time.time()
-                                                           ).split('.')[0]).json()['data']
+        response = rq.get(urls['se']['prices'] + str(time.time()
+                                                     ).split('.')[0]).json()['data']
         df_unfiltered = pd.json_normalize(response)
         df_unfiltered['list'] = df_unfiltered['list'].str.lower()
         df_unfiltered['name'] = df_unfiltered['name'].str.lower()
