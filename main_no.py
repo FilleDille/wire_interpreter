@@ -21,9 +21,8 @@ urls_json.close()
 
 
 class Articles:
-    blacklisted_words = ['återköp av egna', 'kallelse till', 'bolagsstämma',
-                         'bjuder in', 'presentera delårsrapporten', 'inbjudan till',
-                         'publicerar', 'årsstämma', 'valberedning']
+    blacklisted_words = ['innkalling til ekstraordinær generalforsamling', 'nøkkelinformasjon ved innfrielse', 'Tilbakekjøp av ansvarlig obligasjonslån',
+                         'offentliggjør resultat', 'inviterer til presentasjon', 'transaksjoner foretatt under tilbakekjøpsprogram', ]
 
     def get_lang_detector(nlp, name):
         return LanguageDetector()
