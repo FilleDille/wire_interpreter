@@ -58,9 +58,9 @@ class Articles:
 
 
 class Prices:
-    df_unfiltered = pd.Dataframe()
+    df_unfiltered = pd.DataFrame()
     df_fixed_keys = pd.DataFrame()
-    df_filtered = pd.Dataframe()
+    df_filtered = pd.DataFrame()
 
     def populate_df(response):
         company_list = []
