@@ -86,8 +86,9 @@ class Prices:
         Prices.df_fixed_keys = pd.read_csv(current_dir + 'no_fixed_keys.csv')
         Prices.df_fixed_keys['mcap'] = pd.to_numeric(
             Prices.df_fixed_keys['mcap'])
-        Prices.df_unfiltered.merge(Prices.df_fixed_keys, on='ticker')
-        Prices.df_filtered = Prices.df_unfiltered[Prices.df_unfiltered['mcap'] > 1000000000]
+        Prices.df_filtered = Prices.df_unfiltered.merge(
+            Prices.df_fixed_keys, on='ticker')
+        Prices.df_filtered = Prices.df_filtered[Prices.df_filtered['mcap'] > 1000000000]
 
     @staticmethod
     def calculate_change(index_list):
