@@ -20,7 +20,7 @@ urls_json = open(current_dir + 'urls.json')
 urls = json.load(urls_json)
 urls_json.close()
 
-logging.basicConfig(filename=current_dir + 'test.log', level=logging.DEBUG,
+logging.basicConfig(filename=current_dir + 'no.log', level=logging.DEBUG,
                     format='[%(asctime)s] {%(name)s:%(lineno)d} %(levelname)s - %(message)s', force=True)
 logging.getLogger()
 logging.info(f'Current directory: {current_dir}')
