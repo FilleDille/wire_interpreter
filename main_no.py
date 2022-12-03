@@ -10,6 +10,7 @@ import sys
 import os
 import json
 import re
+import logging
 
 current_dir = os.path.expanduser('~') + '/programmering/wire_interpreter/'
 current_time = str(time.time()).split('.')[0]
@@ -18,6 +19,13 @@ current_date = datetime.datetime.now().strftime('%Y-%m-%d')
 urls_json = open(current_dir + 'urls.json')
 urls = json.load(urls_json)
 urls_json.close()
+
+logging.basicConfig(filename=current_dir + 'test.log', level=logging.DEBUG,
+                    format='[%(asctime)s] {%(name)s:%(lineno)d} %(levelname)s - %(message)s', force=True)
+logging.getLogger()
+logging.info(f'Current directory: {current_dir}')
+logging.info(f'Current date: {current_date}')
+logging.info(f'Current time: {current_time}')
 
 
 class Articles:
@@ -30,6 +38,10 @@ class Articles:
     def main():
         site = newspaper.build(urls['no']['articles'])
         site_urls = site.article_urls()
+
+        logging.debug(
+            f'Number of articles fetched before language and blacklist check: {len(site_urls)}')
+
         articles = []
 
         nlp = spacy.load("en_core_web_sm")
@@ -47,6 +59,9 @@ class Articles:
                     if doc._.language['language'] == 'no' and doc._.language['score'] > 0.8:
                         articles.append(article.text.lower())
 
+        logging.debug(
+            f'Number of articles fetched before language and blacklist check: {len(articles)}')
+
         df_articles = pd.DataFrame(articles, columns=['article'])
         df_articles['date'] = current_date
 
@@ -54,6 +69,7 @@ class Articles:
 
         df_articles.to_csv(export_name, index=False)
 
+        logging.info(f'Export successfull, see {export_name}')
         print(f'Export successfull, see {export_name}')
 
 
@@ -123,19 +139,21 @@ class Prices:
         post_data['headers']['Cookie'] = post_data['headers']['Cookie'].replace(
             '@time@', current_time)
 
-        response = rq.post(
-            url=post_data['url'], headers=post_data['headers'], data=post_data['data']).json()
+        response_raw = rq.post(
+            url=post_data['url'], headers=post_data['headers'], data=post_data['data'])
+        logging.debug(f'Prices API response: {response_raw.status_code}')
+        response = response_raw.json()
 
         Prices.populate_df(response)
 
         export_name = current_dir + str(current_date) + ' no_prices.csv'
-
         Prices.df_filtered.to_csv(export_name, index=False)
 
+        logging.info(f'Export successfull, see {export_name}')
         print(f'Export successfull, see {export_name}')
 
         Prices.fetch_osebx()
-
+        logging.info(f'OSEBX return successfully saved')
         print(f'Export successfull, see osebx.csv')
 
 
@@ -182,13 +200,29 @@ class Train:
         return df_index.loc[current_date]['change']
 
     def main():
-        df_articles = pd.read_csv(
-            current_dir + str(current_date) + ' no_articles.csv').dropna()
-        df_articles.set_index('date', inplace=True)
-        Train.df_prices = pd.read_csv(
-            current_dir + str(current_date) + ' no_prices.csv')
-        Train.df_prices.set_index('name', inplace=True)
-        df_training_data = pd.read_csv(current_dir + 'no_training_data.csv')
+        try:
+            df_articles = pd.read_csv(
+                current_dir + str(current_date) + ' no_articles.csv').dropna()
+            df_articles.set_index('date', inplace=True)
+            logging.info(f'Reading csv for df_articles')
+        except:
+            logging.error(f'Error when reading csv for df_articles')
+
+        try:
+            Train.df_prices = pd.read_csv(
+                current_dir + str(current_date) + ' no_prices.csv')
+            Train.df_prices.set_index('name', inplace=True)
+            logging.info(f'Reading csv for df_prices')
+        except:
+            logging.error(f'Error when reading csv for df_prices')
+
+        try:
+            df_training_data = pd.read_csv(
+                current_dir + 'no_training_data.csv')
+            logging.info(f'Reading csv for df_training_data')
+        except:
+            logging.error(f'Error when reading csv for df_training_data')
+
         temp_date_list = []
         temp_company_list = []
         temp_article_list = []
@@ -230,10 +264,21 @@ class Train:
         df_training_data = pd.concat(
             [df_training_data, df_temp], ignore_index=True)
 
+        logging.info(
+            f'Number of trainable articles exported: {len(temp_company_list)}')
+
+        for i in range(1, 6):
+            try:
+                logging.info(
+                    f"of which {df_temp.groupby('grade').count()['company'].loc[i]} articles with grade {i}")
+            except:
+                logging.info(f"of which 0 articles with grade {i}")
+
         export_name = current_dir + 'no_training_data.csv'
 
         df_training_data.to_csv(export_name, index=False)
 
+        logging.info(f'Export successfull, see {export_name}')
         print(f'Export successfull, see {export_name}')
 
 
@@ -242,9 +287,12 @@ if __name__ == "__main__":
         print('Wrong amount of arguments given.')
         print(
             f'Usage: python {sys.argv[0]} <stage>. Eg: python {sys.argv[0]} articles. Run python {sys.argv[0]} help for stages.')
+        logging.error('Wrong amount of sys arguments given')
         sys.exit(1)
 
     stage = sys.argv[1].lower()
+
+    logging.debug(f'Sys argument given: {stage}')
 
     if stage == 'help':
         print('The following stages are available: articles, prices and train.')

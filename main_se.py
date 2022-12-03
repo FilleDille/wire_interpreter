@@ -10,6 +10,7 @@ import sys
 import os
 import json
 import re
+import logging
 
 index_dict = {
     'large cap': 'largecap.csv',
@@ -22,10 +23,14 @@ index_dict = {
 current_dir = os.path.expanduser('~') + '/programmering/wire_interpreter/'
 current_time = str(time.time()).split('.')[0]
 current_date = datetime.datetime.now().strftime('%Y-%m-%d')
-yesterday_date = (datetime.datetime.now()-datetime.timedelta(1)).strftime('%Y-%m-%d')
+yesterday_date = (datetime.datetime.now() -
+                  datetime.timedelta(1)).strftime('%Y-%m-%d')
 urls_json = open(current_dir + 'urls.json')
 urls = json.load(urls_json)
 urls_json.close()
+
+logging.basicConfig(filename='test.log', level=logging.DEBUG,
+                    format='[%(asctime)s] {%(name)s:%(lineno)d} %(levelname)s - %(message)s', force=True)
 
 
 class Articles:
@@ -219,9 +224,11 @@ class Train:
         return df_index.loc[yesterday_date]['change']
 
     def main():
-        df_articles = pd.read_csv(current_dir + str(yesterday_date) + ' articles.csv').dropna()
+        df_articles = pd.read_csv(
+            current_dir + str(yesterday_date) + ' articles.csv').dropna()
         df_articles.set_index('date', inplace=True)
-        Train.df_prices = pd.read_csv(current_dir + str(yesterday_date) + ' prices.csv')
+        Train.df_prices = pd.read_csv(
+            current_dir + str(yesterday_date) + ' prices.csv')
         Train.df_prices.set_index('name', inplace=True)
         df_training_data = pd.read_csv(current_dir + 'training_data.csv')
         temp_date_list = []
