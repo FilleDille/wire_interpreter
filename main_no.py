@@ -36,17 +36,32 @@ class Articles:
         return LanguageDetector()
 
     def main():
-        site = newspaper.build(urls['no']['articles'])
-        site_urls = site.article_urls()
+        try:
+            logging.info(
+                f"Trying to fetch Norwegian articles")
+            site = newspaper.build(urls['no']['articles'])
+            site_urls = site.article_urls()
+        except:
+            logging.critial(
+                f"Failed fetching articles from: {urls['no']['articles']}")
+            return
 
-        logging.debug(
+        logging.info(
             f'Number of articles fetched before language and blacklist check: {len(site_urls)}')
 
         articles = []
 
-        nlp = spacy.load("en_core_web_sm")
-        Language.factory('language_detector', func=Articles.get_lang_detector)
-        nlp.add_pipe('language_detector', last=True)
+        try:
+            logging.info(
+                f'Loading Spacy NLP in Norse')
+            nlp = spacy.load("en_core_web_sm")
+            Language.factory('language_detector',
+                             func=Articles.get_lang_detector)
+            nlp.add_pipe('language_detector', last=True)
+        except:
+            logging.critial(
+                f"Failed fetching articles from: {urls['no']['articles']}")
+            return
 
         for article_url in site_urls:
             article = newspaper.Article(article_url)
@@ -59,7 +74,7 @@ class Articles:
                     if doc._.language['language'] == 'no' and doc._.language['score'] > 0.8:
                         articles.append(article.text.lower())
 
-        logging.debug(
+        logging.info(
             f'Number of articles fetched before language and blacklist check: {len(articles)}')
 
         df_articles = pd.DataFrame(articles, columns=['article'])
@@ -67,10 +82,14 @@ class Articles:
 
         export_name = current_dir + str(current_date) + ' no_articles.csv'
 
-        df_articles.to_csv(export_name, index=False)
+        logging.debug(f'Export name: {export_name}')
 
-        logging.info(f'Export successfull, see {export_name}')
-        print(f'Export successfull, see {export_name}')
+        try:
+            df_articles.to_csv(export_name, index=False)
+            logging.info(f'Export successfull, see {export_name}')
+            print(f'Export successfull, see {export_name}')
+        except:
+            logging.critical(f'Export of Norwegian articles failed')
 
 
 class Prices:
@@ -85,26 +104,71 @@ class Prices:
 
         for company in response['aaData']:
             if 'XOSL' in company[4]:
-                company_list.append(company[1].split(
-                    "data-title-hover='")[1].split("'>")[0].lower())
-                ticker_list.append(company[3].lower())
+                try:
+                    company_list.append(company[1].split(
+                        "data-title-hover='")[1].split("'>")[0].lower())
+                except:
+                    logging.warning(
+                        f'Failed to retrieve company name for {company[1]}')
 
-                _ = company[6].split("pd_percent'>")[1].split("</div")[0]
+                try:
+                    ticker_list.append(company[3].lower())
+                except:
+                    logging.warning(
+                        f'Failed to retrieve ticker for {company[1]}')
+
+                try:
+                    _ = company[6].split("pd_percent'>")[1].split("</div")[0]
+                except:
+                    logging.warning(
+                        f'Failed to retrieve percent change for {company[1]}')
 
                 if _ == "-":
                     pct_list.append(0)
                 else:
-                    pct_list.append(
-                        _.split("%</span>")[0].split(">")[1])
+                    try:
+                        pct_list.append(
+                            _.split("%</span>")[0].split(">")[1])
+                    except:
+                        logging.warning(
+                            f'Failed to extract percent change for {company[1]}')
 
-        Prices.df_unfiltered = pd.DataFrame(
-            {'name': company_list, 'ticker': ticker_list, 'pct': pct_list})
-        Prices.df_fixed_keys = pd.read_csv(current_dir + 'no_fixed_keys.csv')
-        Prices.df_fixed_keys['mcap'] = pd.to_numeric(
-            Prices.df_fixed_keys['mcap'])
-        Prices.df_filtered = Prices.df_unfiltered.merge(
-            Prices.df_fixed_keys, on='ticker')
-        Prices.df_filtered = Prices.df_filtered[Prices.df_filtered['mcap'] > 1000000000]
+        try:
+            Prices.df_unfiltered = pd.DataFrame(
+                {'name': company_list, 'ticker': ticker_list, 'pct': pct_list})
+        except:
+            logging.critial(f'Failed to create df_unfiltered')
+            return
+
+        try:
+            Prices.df_fixed_keys = pd.read_csv(
+                current_dir + 'no_fixed_keys.csv')
+        except:
+            logging.critial(f'Failed to read and create df_fixed_keys')
+            return
+
+        try:
+            Prices.df_fixed_keys['mcap'] = pd.to_numeric(
+                Prices.df_fixed_keys['mcap'])
+        except:
+            logging.critial(
+                f'Failed to convert mcap to numeric in df_fixed_keys')
+            return
+
+        try:
+            Prices.df_filtered = Prices.df_unfiltered.merge(
+                Prices.df_fixed_keys, on='ticker')
+        except:
+            logging.critial(
+                f'Failed to merge df_fixed_keys into df_filtered on ticker')
+            return
+
+        try:
+            Prices.df_filtered = Prices.df_filtered[Prices.df_filtered['mcap'] > 1000000000]
+        except:
+            logging.critial(
+                f'Failed to filter out companies with market cap below 1 b nok')
+            return
 
     @staticmethod
     def calculate_change(index_list):
@@ -128,29 +192,60 @@ class Prices:
                      str(current_date) + '\n')
 
     def fetch_osebx():
-        osebx = rq.get(urls['no']['index']).json()['points']
-        change = Prices.calculate_change(osebx)
-        Prices.write_cap('osebx.csv', change)
+        try:
+            osebx = rq.get(urls['no']['index']).json()['points']
+        except:
+            logging.critial(
+                f"Failed to fetch OSEBX change. OSEBX API response: {osebx.status_code}")
+            return
 
-        print('osebx fetched')
+        try:
+            change = Prices.calculate_change(osebx)
+        except:
+            logging.critial(
+                f"Failed to calculate OSEBX change")
+            return
+        try:
+            Prices.write_cap('osebx.csv', change)
+            print('OSEBX fetched')
+        except:
+            logging.critial(
+                f"Failed to write OSEBX change")
+            return
 
     def main():
-        post_data = urls['no']['prices']
-        post_data['headers']['Cookie'] = post_data['headers']['Cookie'].replace(
-            '@time@', current_time)
+        try:
+            post_data = urls['no']['prices']
+            post_data['headers']['Cookie'] = post_data['headers']['Cookie'].replace(
+                '@time@', current_time)
+        except:
+            logging.critial(
+                f'Failed to fetch prices from urls json and insert time ({current_time}) into post_data')
+            return
 
-        response_raw = rq.post(
-            url=post_data['url'], headers=post_data['headers'], data=post_data['data'])
-        logging.debug(f'Prices API response: {response_raw.status_code}')
-        response = response_raw.json()
+        try:
+            response_raw = rq.post(
+                url=post_data['url'], headers=post_data['headers'], data=post_data['data'])
+            response = response_raw.json()
+            logging.debug(f'Prices API response: {response_raw.status_code}')
+        except:
+            logging.critical(
+                f'Failed to retrieve prices for Norway. Prices API response: {response_raw.status_code}')
+            return
 
         Prices.populate_df(response)
 
         export_name = current_dir + str(current_date) + ' no_prices.csv'
-        Prices.df_filtered.to_csv(export_name, index=False)
 
-        logging.info(f'Export successfull, see {export_name}')
-        print(f'Export successfull, see {export_name}')
+        logging.debug(f'Export name: {export_name}')
+
+        try:
+            Prices.df_filtered.to_csv(export_name, index=False)
+            logging.info(f'Export successfull, see {export_name}')
+            print(f'Export successfull, see {export_name}')
+        except:
+            logging.critical(f'Export of Norwegian articles failed')
+            return
 
         Prices.fetch_osebx()
         logging.info(f'OSEBX return successfully saved')
@@ -163,16 +258,21 @@ class Train:
 
     def company_loop(article):
         temp_list = []
+        try:
+            for company_name in list(Train.df_prices.index.values):
+                company_count = sum(1 for _ in re.finditer(
+                    r'\b%s\b' % re.escape(company_name), article))
+                temp_list.append((company_name, company_count))
 
-        for company_name in list(Train.df_prices.index.values):
-            company_count = sum(1 for _ in re.finditer(
-                r'\b%s\b' % re.escape(company_name), article))
-            temp_list.append((company_name, company_count))
-
-        sorted_list = sorted(temp_list, key=lambda x: x[1], reverse=True)
+            sorted_list = sorted(temp_list, key=lambda x: x[1], reverse=True)
+        except:
+            logging.critical(
+                f'Failed to extract a list of company mentions count')
+            return
 
         if sorted_list[0][1] > 3:
             return sorted_list[0][0]
+
         return None
 
     def fetch_stock_return(stock):
@@ -283,24 +383,27 @@ class Train:
 
 
 if __name__ == "__main__":
-    if len(sys.argv) < 2:
-        print('Wrong amount of arguments given.')
-        print(
-            f'Usage: python {sys.argv[0]} <stage>. Eg: python {sys.argv[0]} articles. Run python {sys.argv[0]} help for stages.')
-        logging.error('Wrong amount of sys arguments given')
-        sys.exit(1)
+    try:
+        if len(sys.argv) < 2:
+            print('Wrong amount of arguments given.')
+            print(
+                f'Usage: python {sys.argv[0]} <stage>. Eg: python {sys.argv[0]} articles. Run python {sys.argv[0]} help for stages.')
+            logging.error('Wrong amount of sys arguments given')
+            sys.exit(1)
 
-    stage = sys.argv[1].lower()
+        stage = sys.argv[1].lower()
 
-    logging.debug(f'Sys argument given: {stage}')
+        logging.debug(f'Sys argument given: {stage}')
 
-    if stage == 'help':
-        print('The following stages are available: articles, prices and train.')
-    elif stage == 'articles':
-        Articles.main()
-    elif stage == 'prices':
-        Prices.main()
-    elif stage == 'train':
-        Train.main()
-    else:
-        print('Provided stage not found.')
+        if stage == 'help':
+            print('The following stages are available: articles, prices and train.')
+        elif stage == 'articles':
+            Articles.main()
+        elif stage == 'prices':
+            Prices.main()
+        elif stage == 'train':
+            Train.main()
+        else:
+            print('Provided stage not found.')
+    except Exception as e:
+        logging.error(f'Failed to run stage {stage}: ' + str(e))
