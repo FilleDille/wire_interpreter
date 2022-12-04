@@ -306,7 +306,8 @@ class Train:
             df_articles.set_index('date', inplace=True)
             logging.info(f'Reading csv for df_articles')
         except:
-            logging.error(f'Error when reading csv for df_articles')
+            logging.critical(f'Failed to read csv for df_articles')
+            return
 
         try:
             Train.df_prices = pd.read_csv(
@@ -314,7 +315,8 @@ class Train:
             Train.df_prices.set_index('name', inplace=True)
             logging.info(f'Reading csv for df_prices')
         except:
-            logging.error(f'Error when reading csv for df_prices')
+            logging.critical(f'failed to read csv for df_prices')
+            return
 
         try:
             df_training_data = pd.read_csv(
