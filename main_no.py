@@ -75,7 +75,7 @@ class Articles:
                         articles.append(article.text.lower())
 
         logging.info(
-            f'Number of articles fetched before language and blacklist check: {len(articles)}')
+            f'Number of articles fetched after language and blacklist check: {len(articles)}')
 
         df_articles = pd.DataFrame(articles, columns=['article'])
         df_articles['date'] = current_date
