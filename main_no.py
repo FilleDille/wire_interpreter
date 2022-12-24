@@ -67,6 +67,7 @@ class Articles:
             article = newspaper.Article(article_url)
             article.download()
             article.parse()
+
             if len(article.text) > 300:
                 if not any(wrd in article.text[:300].lower() for wrd in Articles.blacklisted_words):
                     doc = nlp(article.text)
