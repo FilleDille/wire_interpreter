@@ -369,9 +369,9 @@ class TrainBatch:
         df_training_data = pd.DataFrame()
 
         for hist_date in self.historical_dates:
-            df_articles = pd.read_csv(current_dir + str(hist_date) + ' articles.csv').dropna()
+            df_articles = pd.read_csv(current_dir + str(hist_date) + 'articles.csv').dropna()
             df_articles.set_index('date', inplace=True)
-            self.df_prices = pd.read_csv(current_dir + str(hist_date) + ' prices.csv')
+            self.df_prices = pd.read_csv(current_dir + str(hist_date) + 'prices.csv')
             self.df_prices.set_index('name', inplace=True)
 
             temp_date_list = []
