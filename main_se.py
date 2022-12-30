@@ -32,6 +32,7 @@ urls_json.close()
 logging.basicConfig(filename='test.log', level=logging.DEBUG, format='[%(asctime)s] {%(name)s:%(lineno)d} %(levelname)s'
                                                                      ' - %(message)s', force=True)
 
+
 class Articles:
     blacklisted_words = ['återköp av egna', 'kallelse till', 'bolagsstämma',
                          'bjuder in', 'presentera delårsrapporten', 'inbjudan till',
@@ -64,7 +65,7 @@ class Articles:
         df_articles['date'] = current_date
 
         export_name = current_dir + str(current_date) + \
-            ' articles.csv'
+                      ' articles.csv'
 
         df_articles.to_csv(export_name, index=False)
 
@@ -77,13 +78,13 @@ class Prices:
     @staticmethod
     def calculate_change(index_list):
         today, yesterday = index_list[len(
-            index_list)-1], index_list[len(index_list)-2]
+            index_list) - 1], index_list[len(index_list) - 2]
 
         if type(today) == list:
-            today = index_list[len(index_list)-1][1]
+            today = index_list[len(index_list) - 1][1]
 
         if type(yesterday) == list:
-            yesterday = index_list[len(index_list)-2][1]
+            yesterday = index_list[len(index_list) - 2][1]
 
         change = round(((today / yesterday) - 1) * 100, 2)
 
@@ -239,17 +240,13 @@ class Train:
             temp_stock_name = Train.company_loop(article)
             Train.temp_stock_version = 0
 
-            if temp_stock_name != None:
+            if temp_stock_name is not None:
                 temp_index_name = Train.fetch_stock_index(temp_stock_name)
-                temp_stock_return = Train.fetch_stock_return(
-                    temp_stock_name)
+                temp_stock_return = Train.fetch_stock_return(temp_stock_name)
                 temp_stock_beta = Train.fetch_stock_beta(temp_stock_name)
-                temp_index_return = Train.fetch_index_return(
-                    index_dict[temp_index_name])
-                temp_stock_risk_adjusted_return = float(
-                    temp_index_return) * float(temp_stock_beta)
-                temp_stock_net_return = float(
-                    temp_stock_return) - float(temp_stock_risk_adjusted_return)
+                temp_index_return = Train.fetch_index_return(index_dict[temp_index_name])
+                temp_stock_risk_adjusted_return = float(temp_index_return) * float(temp_stock_beta)
+                temp_stock_net_return = float(temp_stock_return) - float(temp_stock_risk_adjusted_return)
                 temp_category = 0
 
                 if temp_stock_net_return > 6:
@@ -269,7 +266,7 @@ class Train:
                 temp_grade_list.append(temp_category)
 
         df_temp = pd.DataFrame({'date': temp_date_list, 'company': temp_company_list,
-                               'article': temp_article_list, 'grade': temp_grade_list})
+                                'article': temp_article_list, 'grade': temp_grade_list})
         df_training_data = pd.concat(
             [df_training_data, df_temp], ignore_index=True)
 
@@ -380,7 +377,7 @@ class TrainBatch:
             temp_grade_list = []
 
             for article in df_articles['article']:
-                temp_stock_name = self.company_loop(article, int(threshold))
+                temp_stock_name = self.company_loop(article, int(threshold)).lower()
                 self.temp_stock_version = 0
 
                 if temp_stock_name is not None:
