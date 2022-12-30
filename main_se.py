@@ -279,6 +279,7 @@ class Train:
 
         print(f'Export successfull, see {export_name}')
 
+
 class TrainBatch:
     def __init__(self):
         self.df_prices = pd.DataFrame()
@@ -438,5 +439,12 @@ if __name__ == "__main__":
     elif stage == 'train_batch':
         tb = TrainBatch()
         tb.main(sys.argv[2], sys.argv[3])
+    elif stage == 'test':
+        scanned_dir = os.scandir(current_dir[:len(current_dir) - 1])
+
+        for element in scanned_dir:
+            print (element)
+            if element.is_file():
+                print('is file')
     else:
         print('Provided stage not found.')
