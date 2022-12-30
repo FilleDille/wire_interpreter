@@ -297,8 +297,8 @@ class TrainBatch:
 
         for element in scanned_dir:
             if element.is_file():
-                if TrainBatch.is_date(element[:11]) and 'no' not in element:
-                    self.historical_dates_temp.append(element[:11])
+                if TrainBatch.is_date(element.name[:11]) and 'no' not in element.name:
+                    self.historical_dates_temp.append(element.name[:11])
 
         self.historical_dates = set(self.historical_dates_temp)
 
@@ -439,12 +439,5 @@ if __name__ == "__main__":
     elif stage == 'train_batch':
         tb = TrainBatch()
         tb.main(sys.argv[2], sys.argv[3])
-    elif stage == 'test':
-        scanned_dir = os.scandir(current_dir[:len(current_dir) - 1])
-
-        for element in scanned_dir:
-            print (element)
-            if element.is_file():
-                print(element.name)
     else:
         print('Provided stage not found.')
