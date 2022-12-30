@@ -377,14 +377,14 @@ class TrainBatch:
             temp_grade_list = []
 
             for article in df_articles['article']:
-                temp_stock_name = self.company_loop(article, int(threshold)).lower()
+                temp_stock_name = self.company_loop(article, int(threshold))
                 self.temp_stock_version = 0
 
                 if temp_stock_name is not None:
                     temp_index_name = self.fetch_stock_index(temp_stock_name)
                     temp_stock_return = self.fetch_stock_return(temp_stock_name)
                     temp_stock_beta = self.fetch_stock_beta(temp_stock_name)
-                    temp_index_return = self.fetch_index_return(index_dict[temp_index_name])
+                    temp_index_return = self.fetch_index_return(index_dict[temp_index_name.lower()])
                     temp_stock_risk_adjusted_return = float(temp_index_return) * float(temp_stock_beta)
                     temp_stock_net_return = float(temp_stock_return) - float(temp_stock_risk_adjusted_return)
 
