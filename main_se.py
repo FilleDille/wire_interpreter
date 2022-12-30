@@ -364,17 +364,16 @@ class TrainBatch:
 
     def main(self, training_data_name, threshold):
         df_training_data = pd.DataFrame()
+        temp_date_list = []
+        temp_company_list = []
+        temp_article_list = []
+        temp_grade_list = []
 
         for hist_date in self.historical_dates:
             df_articles = pd.read_csv(current_dir + str(hist_date) + 'articles.csv').dropna()
             df_articles.set_index('date', inplace=True)
             self.df_prices = pd.read_csv(current_dir + str(hist_date) + 'prices.csv')
             self.df_prices.set_index('name', inplace=True)
-
-            temp_date_list = []
-            temp_company_list = []
-            temp_article_list = []
-            temp_grade_list = []
 
             for article in df_articles['article']:
                 temp_stock_name = self.company_loop(article, int(threshold))
@@ -399,14 +398,14 @@ class TrainBatch:
                     else:
                         temp_category = 1
 
-                    temp_date_list.append(str(yesterday_date))
+                    temp_date_list.append(str(hist_date))
                     temp_company_list.append(temp_stock_name)
                     temp_article_list.append(article)
                     temp_grade_list.append(temp_category)
 
-            df_temp = pd.DataFrame({'date': temp_date_list, 'company': temp_company_list, 'article': temp_article_list,
-                                    'grade': temp_grade_list})
-            df_training_data = pd.concat([df_training_data, df_temp], ignore_index=True)
+        df_temp = pd.DataFrame({'date': temp_date_list, 'company': temp_company_list, 'article': temp_article_list,
+                                'grade': temp_grade_list})
+        df_training_data = pd.concat([df_training_data, df_temp], ignore_index=True)
 
         export_name = current_dir + f'{training_data_name}.csv'
 
