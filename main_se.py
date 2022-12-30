@@ -73,7 +73,7 @@ class Articles:
 
 
 class Prices:
-    markets = ['small cap', 'mid cap', 'large cap', 'first north', 'ngm']
+    markets = ['small cap', 'mid cap', 'large cap', 'first north', 'first north premier', 'ngm']
 
     @staticmethod
     def calculate_change(index_list):
@@ -135,8 +135,8 @@ class Prices:
         df_unfiltered = pd.json_normalize(response)
         df_unfiltered['list'] = df_unfiltered['list'].str.lower()
         df_unfiltered['name'] = df_unfiltered['name'].str.lower()
-        df_filtered = df_unfiltered[df_unfiltered['list'].isin(
-            Prices.markets)]
+        df_filtered = df_unfiltered[df_unfiltered['list'].isin(Prices.markets)]
+        df_filtered['list'] = df_filtered['list'].str.replace('first north premier', 'first north')
         df_filtered['borsvarde'] = pd.to_numeric(df_filtered['borsvarde'])
         df_filtered = df_filtered[df_filtered['borsvarde'] > 1000000000]
         df_filtered = df_filtered[df_filtered['lastprice'].notna()]
