@@ -445,6 +445,6 @@ if __name__ == "__main__":
         for element in scanned_dir:
             print (element)
             if element.is_file():
-                print('is file')
+                print(element.name)
     else:
         print('Provided stage not found.')
