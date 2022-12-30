@@ -435,7 +435,7 @@ if __name__ == "__main__":
         Prices.main()
     elif stage == 'train':
         Train.main()
-    elif stage == 'TrainBatch':
+    elif stage == 'train_batch':
         tb = TrainBatch()
         tb.main(sys.argv[2], sys.argv[3])
     else:
