@@ -35,7 +35,8 @@ logging.getLogger()
 class Articles:
     blacklisted_words = ['återköp av egna', 'kallelse till', 'bolagsstämma',
                          'bjuder in', 'presentera delårsrapporten', 'inbjudan till',
-                         'publicerar', 'årsstämma', 'valberedning']
+                         'publicerar', 'årsstämma', 'valberedning', 'enligt bolagsordningen',
+                         'offentliggör prospekt', 'förändring av antalet aktier']
 
     def get_lang_detector(nlp, name):
         return LanguageDetector()
