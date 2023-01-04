@@ -372,6 +372,7 @@ class TrainBatch:
         temp_grade_list = []
 
         for hist_date in self.historical_dates:
+            print(f'Starting on {hist_date}...')
             df_articles = pd.read_csv(current_dir + str(hist_date) + 'articles.csv').dropna()
             df_articles.set_index('date', inplace=True)
             self.df_prices = pd.read_csv(current_dir + str(hist_date) + 'prices.csv')
