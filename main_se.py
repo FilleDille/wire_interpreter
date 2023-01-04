@@ -29,10 +29,9 @@ urls_json = open(current_dir + 'urls.json')
 urls = json.load(urls_json)
 urls_json.close()
 
-logging.basicConfig(filename='test.log', level=logging.DEBUG, format='[%(asctime)s] {%(name)s:%(lineno)d} %(levelname)s'
-                                                                     ' - %(message)s', force=True)
-
-
+logging.basicConfig(filename=current_dir + 'se.log', level=logging.DEBUG,
+                    format='[%(asctime)s] {%(name)s:%(lineno)d} %(levelname)s - %(message)s', force=True)
+logging.getLogger()
 class Articles:
     blacklisted_words = ['återköp av egna', 'kallelse till', 'bolagsstämma',
                          'bjuder in', 'presentera delårsrapporten', 'inbjudan till',
@@ -316,7 +315,7 @@ class TrainBatch:
             temp_list.append((company_name, company_count))
 
         sorted_list = sorted(temp_list, key=lambda x: x[1], reverse=True)
-
+        logging.debug(f"sorted_list = {sorted_list[:5]}")
         if sorted_list[0][1] > threshold:
             return sorted_list[0][0]
 

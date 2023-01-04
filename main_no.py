@@ -59,7 +59,7 @@ class Articles:
                              func=Articles.get_lang_detector)
             nlp.add_pipe('language_detector', last=True)
         except:
-            logging.critial(
+            logging.critical(
                 f"Failed fetching articles from: {urls['no']['articles']}")
             return
 
