@@ -315,7 +315,9 @@ class TrainBatch:
             temp_list.append((company_name, company_count))
 
         sorted_list = sorted(temp_list, key=lambda x: x[1], reverse=True)
+
         logging.debug(f"sorted_list = {sorted_list[:5]}")
+
         if sorted_list[0][1] > threshold:
             return sorted_list[0][0]
 
@@ -374,8 +376,10 @@ class TrainBatch:
             df_articles.set_index('date', inplace=True)
             self.df_prices = pd.read_csv(current_dir + str(hist_date) + 'prices.csv')
             self.df_prices.set_index('name', inplace=True)
+            logging.debug(f"hist_date = {hist_date}")
 
             for article in df_articles['article']:
+                logging.debug(f"article = {article}")
                 temp_stock_name = self.company_loop(article, int(threshold))
                 self.temp_stock_version = 0
 
