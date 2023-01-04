@@ -387,14 +387,12 @@ class TrainBatch:
                     temp_stock_risk_adjusted_return = float(temp_index_return) * float(temp_stock_beta)
                     temp_stock_net_return = float(temp_stock_return) - float(temp_stock_risk_adjusted_return)
 
-                    if temp_stock_net_return > 6:
-                        temp_category = 5
-                    elif temp_stock_net_return > 4:
-                        temp_category = 4
-                    elif temp_stock_net_return > 2:
+                    if temp_stock_net_return > 3:
                         temp_category = 3
+
                     elif temp_stock_net_return > 0:
                         temp_category = 2
+
                     else:
                         temp_category = 1
 
