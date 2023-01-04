@@ -298,6 +298,7 @@ class TrainBatch:
                     self.historical_dates_temp.append(element.name[:11])
 
         self.historical_dates = set(self.historical_dates_temp)
+        self.historical_dates.remove(max(self.historical_dates))
 
     def is_date(inp):
         try:
