@@ -311,7 +311,13 @@ class TrainBatch:
         temp_list = []
 
         for company_name in list(self.df_prices.index.values):
-            company_count = sum(1 for _ in re.finditer(r'\b%s\b' % re.escape(company_name), article))
+            temp_name = company_name
+
+            if len(company_name.split(' ')) > 1:
+                if len(company_name.split(' ')[-1]) == 1:
+                    temp_name = company_name.split(' ')[:-2]
+
+            company_count = sum(1 for _ in re.finditer(r'\b%s\b' % re.escape(temp_name), article))
             temp_list.append((company_name, company_count))
 
         sorted_list = sorted(temp_list, key=lambda x: x[1], reverse=True)
