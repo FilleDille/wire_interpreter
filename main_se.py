@@ -61,11 +61,16 @@ class Articles:
                     if doc._.language['language'] == 'sv' and doc._.language['score'] > 0.8:
                         articles.append(article.text.lower())
 
-        df_articles = pd.DataFrame(articles, columns=['article'])
-        df_articles['date'] = current_date
+        try:
+            df_articles = pd.read_csv(current_dir + str(current_date) + ' articles.csv').dropna()
+            df_temp = pd.DataFrame(articles, columns=['article'])
+            df_temp['date'] = current_date
+            df_articles = pd.concat([df_articles, df_temp], ignore_index=True)
+        except:
+            df_articles = pd.DataFrame(articles, columns=['article'])
+            df_articles['date'] = current_date
 
-        export_name = current_dir + str(current_date) + \
-                      ' articles.csv'
+        export_name = current_dir + str(current_date) + ' articles.csv'
 
         df_articles.to_csv(export_name, index=False)
 
