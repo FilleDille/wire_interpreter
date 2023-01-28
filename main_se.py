@@ -302,7 +302,7 @@ class TrainBatch:
                 if TrainBatch.is_date(element.name[:11]) and 'no' not in element.name:
                     self.historical_dates_temp.append(element.name[:11])
 
-        self.historical_dates = set(self.historical_dates_temp)
+        self.historical_dates = sorted(set(self.historical_dates_temp))
         if datetime.datetime.today().weekday() not in (5, 6):
             self.historical_dates.remove(max(self.historical_dates))
 
