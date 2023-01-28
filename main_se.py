@@ -303,8 +303,10 @@ class TrainBatch:
                     self.historical_dates_temp.append(element.name[:11])
 
         self.historical_dates = set(self.historical_dates_temp)
-        self.historical_dates.remove(max(self.historical_dates))
+        if datetime.datetime.today().weekday() in (5, 6):
+            self.historical_dates.remove(max(self.historical_dates))
 
+    @staticmethod
     def is_date(inp):
         try:
             parse(inp, fuzzy=False)
